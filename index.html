@@ -569,40 +569,6 @@ body::before {
   color: #d4788a;
 }
 
-/* 游戏结束时：在剩余金额格上显示对应的箱子编号 */
-.money-cell .mc-case-badge {
-  display: none;
-  position: absolute;
-  top: 1px;
-  right: 3px;
-  min-width: 18px;
-  height: 16px;
-  line-height: 15px;
-  padding: 0 3px;
-  border-radius: 8px;
-  background: linear-gradient(180deg, #e8443c 0%, #b8221a 100%);
-  border: 1px solid #ffb0a6;
-  color: #fff;
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: -0.2px;
-  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.5);
-  z-index: 5;
-  pointer-events: none;
-}
-
-.money-cell { position: relative; }
-
-/* 显示徽章时，金额稍微左移避让 */
-.money-cell.reveal-case .mc-value {
-  padding-right: 34px;
-}
-
-.money-cell.reveal-case .mc-case-badge {
-  display: inline-block;
-}
-
 /* ===== Intro Money Board (shown at game start, then animates to button) ===== */
 .money-intro-overlay {
   position: fixed;
@@ -1336,13 +1302,8 @@ function buildMoneyCell(amt, extraClass) {
     ? amt.toFixed(2).replace(/^0/, '')   // 0.01 -> .01
     : amt.toLocaleString('en-US');
 
-  // 箱子编号徽章（游戏结束时显示该金额在哪个箱子）
-  const badge = document.createElement('span');
-  badge.className = 'mc-case-badge';
-
   cell.appendChild(dollar);
   cell.appendChild(value);
-  cell.appendChild(badge);
   return cell;
 }
 
@@ -1370,22 +1331,13 @@ function renderIntroMoneyBoard() {
 
 function updateMoneyBoard() {
   let remainingCount = 0;
-  const isFinished = gameState.phase === 'finished';
-
   AMOUNTS.forEach(amt => {
     const cell = document.getElementById('money-' + amt);
     if (!cell) return;
-
-    // 清除上一局的徽章状态
-    cell.classList.remove('reveal-case');
-    const badge = cell.querySelector('.mc-case-badge');
-    if (badge) badge.textContent = '';
-
     const isEliminated = gameState.openedCaseIds.some(id => {
       const c = gameState.cases.find(cs => cs.id === id);
       return c && c.amount === amt;
     });
-
     if (isEliminated) {
       cell.classList.remove('active');
       cell.classList.add('eliminated');
@@ -1395,23 +1347,13 @@ function updateMoneyBoard() {
       cell.classList.add('active');
       cell.classList.remove('eliminated', 'high-value', 'low-value');
       remainingCount++;
-
-      // 游戏结束时：在剩余金额格上显示该金额所在的箱子编号
-      if (isFinished && badge) {
-        const ownerCase = gameState.cases.find(cs => cs.amount === amt);
-        if (ownerCase) {
-          badge.textContent = ownerCase.id + '号';
-          cell.classList.add('reveal-case');
-        }
-      }
     }
   });
 
   // Update remaining count badge
   const btn = document.getElementById('moneyToggleBtn');
   btn.setAttribute('data-remaining', remainingCount);
-  document.getElementById('moneyRemainingText').textContent =
-    isFinished ? '游戏结束' : (remainingCount + ' 个剩余');
+  document.getElementById('moneyRemainingText').textContent = remainingCount + ' 个剩余';
 }
 
 // ===== Floating Money Panel Toggle =====
@@ -2048,9 +1990,6 @@ function showResult(type, amount, detail, extra) {
 
   // Record stats to localStorage
   recordGameResult(amount);
-
-  // 更新奖金面板：游戏结束时在剩余金额格上显示对应箱子编号
-  updateMoneyBoard();
 
   const overlay = document.getElementById('resultOverlay');
   const title = document.getElementById('resultTitle');
