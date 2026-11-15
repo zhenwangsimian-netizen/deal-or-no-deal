@@ -899,26 +899,36 @@ body.money-panel-open .action-submessage {
 /* ===== Toast ===== */
 .toast {
   position: fixed;
-  top: 16px;
+  /* 顶部安全区之下，避开 iOS 状态栏 / 浏览器地址栏，避免首行被裁切 */
+  top: calc(env(safe-area-inset-top, 0px) + 96px);
   left: 50%;
-  transform: translateX(-50%) translateY(-80px);
+  transform: translateX(-50%) translateY(-120px);
   background: var(--card-bg);
   border: 1px solid var(--border-gold);
   border-radius: 8px;
-  padding: 8px 18px;
+  padding: 10px 18px;
   color: var(--white);
-  font-size: 1.2rem;
+  font-size: 1.125rem;
   font-weight: 600;
   z-index: 300;
   transition: transform 0.3s ease;
   box-shadow: 0 4px 16px rgba(0,0,0,0.4);
   backdrop-filter: blur(8px);
-  max-width: 90%;
+  max-width: calc(100vw - 24px);
+  /* 单行显示，杜绝换行后被裁切只剩半句 */
+  white-space: nowrap;
+  overflow: visible;
   text-align: center;
+  text-overflow: clip;
 }
 
 .toast.show {
   transform: translateX(-50%) translateY(0);
+}
+
+/* 文案过长时（如还价提示）允许换行，但限制最多两行 */
+.toast.toast-wrap {
+  white-space: normal;
 }
 
 /* ===== Case Opening Animation ===== */
@@ -1242,6 +1252,8 @@ function formatMoneyShort(amount) {
 function showToast(message, duration = 2500) {
   const toast = document.getElementById('toast');
   toast.textContent = message;
+  // 长文案允许换行显示，短文案保持单行，避免被裁切
+  toast.classList.toggle('toast-wrap', message.length > 14);
   toast.classList.add('show');
   setTimeout(() => toast.classList.remove('show'), duration);
 }
@@ -1543,7 +1555,7 @@ function selectCase(id) {
   renderBriefcases();
   updateStatus();
 
-  showToast('已选择 ' + id + ' 号手提箱作为你的幸运箱！');
+  showToast('已选择 ' + id + ' 号幸运箱！');
   addHistory('🎯 你选择了 ' + id + ' 号手提箱。');
 
   startRound();
