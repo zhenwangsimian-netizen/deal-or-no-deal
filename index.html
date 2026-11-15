@@ -1,0 +1,2122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>一掷千金 | Deal or No Deal</title>
+<style>
+/* ===== CSS Variables ===== */
+:root {
+  --bg-dark: #0a0e27;
+  --bg-mid: #11163a;
+  --bg-light: #1a2050;
+  --gold: #FFD700;
+  --gold-dark: #B8860B;
+  --gold-glow: rgba(255, 215, 0, 0.3);
+  --red: #ff4757;
+  --red-glow: rgba(255, 71, 87, 0.4);
+  --green: #2ed573;
+  --green-glow: rgba(46, 213, 115, 0.4);
+  --blue: #3498db;
+  --white: #ffffff;
+  --gray: #8899aa;
+  --gray-dark: #4a5568;
+  --card-bg: rgba(26, 32, 80, 0.85);
+  --border-gold: rgba(255, 215, 0, 0.25);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  background: radial-gradient(ellipse at center, var(--bg-mid) 0%, var(--bg-dark) 70%);
+  color: var(--white);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== Animated Background ===== */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(255,215,0,0.04) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(52,152,219,0.04) 0%, transparent 40%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ===== Header ===== */
+.header {
+  text-align: center;
+  padding: 8px 16px 4px;
+  position: relative;
+  z-index: 1;
+}
+
+.header h1 {
+  font-size: 2.25rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--gold) 0%, #FFF 50%, var(--gold) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 2px;
+  text-shadow: 0 0 30px var(--gold-glow);
+}
+
+.header .subtitle {
+  color: var(--gray);
+  font-size: 0.975rem;
+  margin-top: 1px;
+  letter-spacing: 3px;
+}
+
+/* ===== Stats Display (title screen only) ===== */
+.stats-display {
+  background: var(--card-bg);
+  border: 1px solid var(--border-gold);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin: 8px auto 0;
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  backdrop-filter: blur(8px);
+  max-width: 400px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-icon {
+  font-size: 1.35rem;
+  margin-bottom: 2px;
+}
+
+.stat-label {
+  font-size: 0.825rem;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stat-value {
+  font-size: 1.275rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.stat-value.million { color: var(--green); }
+
+/* ===== Game Container ===== */
+.game-container {
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 0 10px 10px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ===== Top Status Bar ===== */
+.status-bar {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: var(--card-bg);
+  border: 1px solid var(--border-gold);
+  border-radius: 10px;
+  padding: 6px 8px;
+  margin-bottom: 8px;
+  backdrop-filter: blur(8px);
+}
+
+.status-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+}
+
+.status-label {
+  font-size: 0.825rem;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-value {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.status-value.round { color: var(--blue); }
+.status-value.cases { color: var(--white); }
+
+/* ===== Briefcase Area ===== */
+.briefcases-wrapper {
+  background: var(--card-bg);
+  border: 1px solid var(--border-gold);
+  border-radius: 10px;
+  padding: 8px;
+  margin-bottom: 8px;
+  backdrop-filter: blur(8px);
+}
+
+.briefcases-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.briefcase-item {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1e2660, #15193d);
+  border: 1px solid rgba(255,215,0,0.2);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.briefcase-item::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 40%;
+  background: linear-gradient(180deg, rgba(255,215,0,0.12), transparent);
+}
+
+.briefcase-item:active:not(.opened):not(.selected) {
+  transform: scale(0.95);
+}
+
+.briefcase-item.selected {
+  background: linear-gradient(135deg, rgba(255,215,0,0.25), rgba(184,134,11,0.15));
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 15px var(--gold-glow);
+}
+
+.briefcase-item.opened {
+  background: rgba(0,0,0,0.3);
+  border-color: rgba(255,255,255,0.05);
+  cursor: default;
+  opacity: 0.35;
+}
+
+.briefcase-item.opened .case-icon { filter: grayscale(1); }
+.briefcase-item.opened .case-number { color: var(--gray-dark); }
+
+.case-icon {
+  font-size: 1.5rem;
+  margin-bottom: 1px;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+}
+
+.case-number {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.case-amount {
+  font-size: 0.75rem;
+  color: var(--red);
+  margin-top: 1px;
+  font-weight: 600;
+}
+
+/* ===== Action Panel ===== */
+.action-panel {
+  background: var(--card-bg);
+  border: 1px solid var(--border-gold);
+  border-radius: 10px;
+  padding: 10px 12px;
+  text-align: center;
+  backdrop-filter: blur(8px);
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-message {
+  font-size: 1.275rem;
+  color: var(--white);
+  margin-bottom: 6px;
+  min-height: 18px;
+  font-weight: 600;
+}
+
+.action-submessage {
+  font-size: 1.05rem;
+  color: var(--gray);
+  margin-bottom: 8px;
+  min-height: 16px;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 36px;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  border: 2px solid;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: none;
+  font-family: inherit;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.btn:active { transform: scale(0.96); }
+
+.btn-deal {
+  border-color: var(--green);
+  color: var(--green);
+  background: rgba(46,213,115,0.1);
+}
+
+.btn-deal:active {
+  background: var(--green);
+  color: var(--bg-dark);
+}
+
+.btn-no-deal {
+  border-color: var(--red);
+  color: var(--red);
+  background: rgba(255,71,87,0.1);
+  margin-left: 6px;
+}
+
+.btn-no-deal:active {
+  background: var(--red);
+  color: var(--white);
+}
+
+.btn-counter {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: rgba(52,152,219,0.1);
+  margin-left: 6px;
+}
+
+.btn-counter:active {
+  background: var(--blue);
+  color: var(--white);
+}
+
+.btn-counter:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.btn-swap {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(255,215,0,0.1);
+  margin: 0 4px;
+}
+
+.btn-swap:active { background: var(--gold); color: var(--bg-dark); }
+
+.btn-keep {
+  border-color: var(--white);
+  color: var(--white);
+  background: rgba(255,255,255,0.08);
+  margin: 0 4px;
+}
+
+.btn-keep:active { background: var(--white); color: var(--bg-dark); }
+
+.btn-start {
+  border-color: var(--gold);
+  color: var(--gold);
+  background: rgba(255,215,0,0.1);
+  padding: 20px 72px;
+  font-size: 1.425rem;
+}
+
+.btn-start:active {
+  background: var(--gold);
+  color: var(--bg-dark);
+}
+
+/* ===== Floating Money Board Button ===== */
+.money-toggle-btn {
+  position: fixed;
+  bottom: 72px;
+  right: 14px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  border: 2px solid var(--gold);
+  color: var(--bg-dark);
+  font-size: 1.35rem;
+  font-weight: 800;
+  cursor: pointer;
+  z-index: 250;
+  box-shadow: 0 4px 16px var(--gold-glow);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.money-toggle-btn:active { transform: scale(0.92); }
+
+.money-toggle-btn.badge::after {
+  content: attr(data-remaining);
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--red);
+  color: var(--white);
+  font-size: 0.45rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+/* ===== Floating Money Board Panel ===== */
+/* ===== Backdrop for money panel ===== */
+.money-backdrop {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 248;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.money-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.money-float-panel {
+  position: fixed;
+  bottom: 130px;
+  right: 14px;
+  width: 360px;
+  background: linear-gradient(160deg, #2a1a08 0%, #120b04 100%);
+  border: 3px solid #6b4a15;
+  border-radius: 8px;
+  padding: 8px;
+  z-index: 249;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.6);
+  transform: scale(0) translateY(20px);
+  transform-origin: bottom right;
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.money-float-panel.open {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.money-float-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 4px 6px;
+  background: linear-gradient(180deg, #1a1208, #0d0803);
+  border: 2px solid #6b4a15;
+  border-radius: 4px;
+}
+
+.money-float-title {
+  font-size: 0.825rem;
+  font-weight: 800;
+  color: var(--gold);
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px var(--gold-glow);
+}
+
+.money-float-remaining {
+  font-size: 0.75rem;
+  color: #b8946a;
+}
+
+.money-float-close {
+  background: none;
+  border: none;
+  color: #b8946a;
+  font-size: 1.35rem;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.money-float-close:active { color: var(--red); }
+
+/* ===== Money Board Grid (原版样式：双列金色按钮，左小右大) ===== */
+/* 使用两列独立堆叠：左列 = 较小面额(上→下)，右列 = 较大面额(上→下) */
+.money-float-board {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(13, auto);
+  gap: 3px;
+}
+
+.money-float-board::-webkit-scrollbar { width: 4px; }
+.money-float-board::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 2px; }
+.money-float-board::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 2px; }
+
+/* 单个奖金格：金色渐变 + 独立边框 */
+.money-cell {
+  display: flex;
+  align-items: center;
+  padding: 5px 8px;
+  font-size: 1.08rem;
+  font-weight: 700;
+  transition: all 0.3s ease;
+  background: linear-gradient(180deg, #f7d774 0%, #e0b13c 45%, #c8901f 100%);
+  border: 1px solid #7a5514;
+  border-radius: 3px;
+  color: #3a2708;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+/* 美元符号 */
+.money-cell .mc-dollar {
+  flex: 0 0 auto;
+  margin-right: auto;
+  font-weight: 800;
+  opacity: 0.75;
+  font-size: 0.825rem;
+}
+
+/* 金额数字（右对齐） */
+.money-cell .mc-value {
+  flex: 1 1 auto;
+  text-align: right;
+  letter-spacing: -0.5px;
+}
+
+.money-cell.active {
+  filter: brightness(1.05);
+}
+
+/* 已消除：熄灭并划线 */
+.money-cell.eliminated {
+  background: linear-gradient(180deg, #4a3a1c 0%, #2e2412 100%);
+  border-color: #3a2c10;
+  color: #6b5730;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+  text-shadow: none;
+  opacity: 0.75;
+}
+
+.money-cell.eliminated .mc-value {
+  text-decoration: line-through;
+}
+
+.money-cell.eliminated .mc-dollar {
+  opacity: 0.4;
+}
+
+/* 已消除且是低金额（好运） */
+.money-cell.eliminated.low-value {
+  background: linear-gradient(180deg, #1e4d2e 0%, #143520 100%);
+  border-color: #1d5c35;
+  color: #5fbf85;
+}
+
+.money-cell.eliminated.high-value {
+  background: linear-gradient(180deg, #5c1e26 0%, #3d1218 100%);
+  border-color: #6b2129;
+  color: #d4788a;
+}
+
+/* ===== Intro Money Board (shown at game start, then animates to button) ===== */
+.money-intro-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 90;
+  backdrop-filter: blur(6px);
+}
+
+.money-intro-overlay.show {
+  display: flex;
+  animation: fadeIn 0.3s ease;
+}
+
+.money-intro-card {
+  background: linear-gradient(160deg, #2a1a08 0%, #120b04 100%);
+  border: 3px solid #6b4a15;
+  border-radius: 8px;
+  padding: 10px;
+  max-width: 460px;
+  width: 92%;
+  box-shadow: 0 0 40px rgba(0,0,0,0.8), inset 0 0 40px rgba(0,0,0,0.6);
+  transform: scale(1);
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease;
+  position: relative;
+}
+
+.money-intro-card.shrinking {
+  transform: scale(0.13) translate(160px, 280px);
+  opacity: 0;
+}
+
+.money-intro-title {
+  text-align: center;
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--gold);
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px var(--gold-glow);
+  background: linear-gradient(180deg, #1a1208, #0d0803);
+  border: 2px solid #6b4a15;
+  border-radius: 4px;
+  padding: 5px;
+}
+
+.money-intro-board {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-auto-flow: column;
+  grid-template-rows: repeat(13, auto);
+  gap: 4px;
+}
+
+/* ===== Banker Call Overlay ===== */
+.banker-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.75);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(4px);
+  padding: 16px;
+}
+
+.banker-overlay.show {
+  display: flex;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.banker-card {
+  background: linear-gradient(135deg, var(--bg-mid), var(--bg-dark));
+  border: 2px solid var(--gold);
+  border-radius: 14px;
+  padding: 18px 22px;
+  text-align: center;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 0 50px var(--gold-glow);
+  animation: scaleIn 0.35s ease;
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.7); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.banker-title {
+  font-size: 1.125rem;
+  color: var(--gray);
+  margin-bottom: 4px;
+  letter-spacing: 1px;
+}
+
+.banker-icon {
+  font-size: 3rem;
+  margin-bottom: 4px;
+}
+
+.banker-offer-label {
+  font-size: 1.05rem;
+  color: var(--gray);
+  margin-bottom: 4px;
+}
+
+.banker-offer-amount {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--gold);
+  text-shadow: 0 0 20px var(--gold-glow);
+  margin-bottom: 8px;
+}
+
+.banker-expected {
+  font-size: 0.975rem;
+  color: var(--gray);
+  margin-bottom: 12px;
+  white-space: pre-line;
+  line-height: 1.4;
+}
+
+.banker-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* ===== Counter Offer Panel ===== */
+.counter-panel {
+  margin-top: 10px;
+  display: none;
+}
+
+.counter-panel.show {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+.counter-hint {
+  font-size: 0.975rem;
+  color: var(--gray);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.counter-input-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.counter-input {
+  background: var(--bg-dark);
+  border: 1px solid var(--border-gold);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--gold);
+  font-size: 1.5rem;
+  font-weight: 700;
+  width: 180px;
+  text-align: center;
+  font-family: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.counter-input:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 12px var(--gold-glow);
+}
+
+.counter-range {
+  font-size: 0.9rem;
+  color: var(--gray);
+  margin-bottom: 6px;
+}
+
+/* ===== Counter Result Overlay ===== */
+.counter-result-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 260;
+  backdrop-filter: blur(6px);
+}
+
+.counter-result-overlay.show {
+  display: flex;
+  animation: fadeIn 0.2s ease;
+}
+
+.counter-result-card {
+  background: linear-gradient(135deg, var(--bg-mid), var(--bg-dark));
+  border: 2px solid var(--gold);
+  border-radius: 16px;
+  padding: 28px 32px;
+  text-align: center;
+  max-width: 340px;
+  width: 85%;
+  box-shadow: 0 0 60px var(--gold-glow);
+  animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.counter-result-card.accept {
+  border-color: var(--green);
+  box-shadow: 0 0 60px var(--green-glow);
+}
+
+.counter-result-card.reject {
+  border-color: var(--red);
+  box-shadow: 0 0 60px var(--red-glow);
+}
+
+.counter-result-icon {
+  font-size: 3.75rem;
+  margin-bottom: 10px;
+  animation: scaleIn 0.5s ease;
+}
+
+.counter-result-text {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.counter-result-card.accept .counter-result-text { color: var(--green); }
+.counter-result-card.reject .counter-result-text { color: var(--red); }
+
+.counter-result-sub {
+  font-size: 1.05rem;
+  color: var(--gray);
+  line-height: 1.5;
+}
+
+/* ===== Result Overlay ===== */
+.result-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.88);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  backdrop-filter: blur(6px);
+  padding: 16px;
+}
+
+.result-overlay.show {
+  display: flex;
+  animation: fadeIn 0.5s ease;
+}
+
+.result-card {
+  background: linear-gradient(135deg, var(--bg-mid), var(--bg-dark));
+  border: 2px solid var(--gold);
+  border-radius: 16px;
+  padding: 24px 28px;
+  text-align: center;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 0 60px var(--gold-glow);
+  animation: scaleIn 0.5s ease;
+}
+
+.result-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.result-title.win { color: var(--gold); }
+.result-title.lose { color: var(--red); }
+
+.result-amount {
+  font-size: 3.3rem;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.result-amount.win { color: var(--gold); text-shadow: 0 0 20px var(--gold-glow); }
+.result-amount.lose { color: var(--red); }
+
+.result-detail {
+  font-size: 1.125rem;
+  color: var(--gray);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+/* ===== Toast ===== */
+.toast {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-80px);
+  background: var(--card-bg);
+  border: 1px solid var(--border-gold);
+  border-radius: 8px;
+  padding: 8px 18px;
+  color: var(--white);
+  font-size: 1.2rem;
+  font-weight: 600;
+  z-index: 300;
+  transition: transform 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  backdrop-filter: blur(8px);
+  max-width: 90%;
+  text-align: center;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ===== Case Opening Animation ===== */
+.case-opening-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 150;
+}
+
+.case-opening-overlay.show { display: flex; }
+
+.opening-case { text-align: center; }
+
+.opening-case .case-icon-big {
+  font-size: 6rem;
+  animation: shake 0.5s ease;
+}
+
+.opening-case .opening-amount {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-top: 10px;
+  animation: revealAmount 0.6s ease;
+}
+
+/* 开箱时的箱子编号标签 */
+.opening-case .opening-case-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 1px;
+  margin-top: 6px;
+  text-shadow: 0 0 10px var(--gold-glow);
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-10px) rotate(-3deg); }
+  40% { transform: translateX(10px) rotate(3deg); }
+  60% { transform: translateX(-8px) rotate(-2deg); }
+  80% { transform: translateX(8px) rotate(2deg); }
+}
+
+@keyframes revealAmount {
+  from { opacity: 0; transform: scale(0.3); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ===== History Log ===== */
+.history-log {
+  background: var(--card-bg);
+  border: 1px solid var(--border-gold);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-top: 8px;
+  max-height: 80px;
+  overflow-y: auto;
+  font-size: 1.05rem;
+  backdrop-filter: blur(8px);
+  -webkit-overflow-scrolling: touch;
+}
+
+.history-log::-webkit-scrollbar { width: 3px; }
+.history-log::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+.history-log::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 2px; }
+
+.history-entry {
+  padding: 2px 0;
+  color: var(--gray);
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  line-height: 1.4;
+}
+
+/* ===== Phone Ring Animation ===== */
+.phone-ring {
+  display: inline-block;
+  animation: ring 0.5s ease infinite;
+}
+
+@keyframes ring {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-12deg); }
+  75% { transform: rotate(12deg); }
+}
+
+/* ===== Desktop: center the phone frame ===== */
+@media (min-width: 500px) {
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .game-container {
+    max-width: 440px;
+    width: 440px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>💰 一掷千金</h1>
+  <div class="subtitle">DEAL OR NO DEAL</div>
+</div>
+
+<div class="game-container">
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div class="status-item">
+      <span class="status-label">轮次</span>
+      <span class="status-value round" id="statusRound">—</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">待开箱</span>
+      <span class="status-value cases" id="statusCasesLeft">—</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">你的箱</span>
+      <span class="status-value" id="statusSelectedCase">—</span>
+    </div>
+    <div class="status-item">
+      <span class="status-label">还价</span>
+      <span class="status-value" id="statusCounter">可用</span>
+    </div>
+  </div>
+
+  <!-- Briefcases -->
+  <div class="briefcases-wrapper">
+    <div class="briefcases-grid" id="briefcasesGrid"></div>
+  </div>
+
+  <!-- Action Panel -->
+  <div class="action-panel" id="actionPanel">
+    <div class="action-message" id="actionMessage">欢迎来到一掷千金！</div>
+    <div class="action-submessage" id="actionSubMessage">点击下方按钮开始游戏，有机会赢得 $1,000,000</div>
+    <button class="btn btn-start" id="btnStart" onclick="startGame()">开始游戏</button>
+  </div>
+
+  <!-- Stats Display (title screen only) -->
+  <div class="stats-display" id="statsDisplay">
+    <div class="stat-item">
+      <span class="stat-icon">🏆</span>
+      <span class="stat-label">百万大奖</span>
+      <span class="stat-value million" id="statMillions">0 次</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-icon">💰</span>
+      <span class="stat-label">平均获奖</span>
+      <span class="stat-value" id="statAvgWin">$0</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-icon">🎮</span>
+      <span class="stat-label">总局数</span>
+      <span class="stat-value" id="statTotalGames">0</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- History Log (title screen only) -->
+<div class="game-container" id="historyContainer" style="display:none;">
+  <div class="history-log" id="historyLog">
+    <div style="color:var(--gray); font-size:0.9rem; margin-bottom:2px;">📜 历史游戏记录</div>
+    <div id="historyEntries"></div>
+  </div>
+</div>
+
+<!-- Floating Money Board Toggle Button -->
+<button class="money-toggle-btn" id="moneyToggleBtn" onclick="toggleMoneyPanel()" style="display:none;" title="奖金列表">
+  💰
+</button>
+
+<!-- Backdrop for money panel (click outside to close) -->
+<div class="money-backdrop" id="moneyBackdrop" onclick="closeMoneyPanel()"></div>
+
+<!-- Floating Money Board Panel -->
+<div class="money-float-panel" id="moneyFloatPanel" onclick="event.stopPropagation()">
+  <div class="money-float-header">
+    <span class="money-float-title">💰 奖金列表</span>
+    <span class="money-float-remaining" id="moneyRemainingText">26个</span>
+    <button class="money-float-close" onclick="event.stopPropagation(); closeMoneyPanel();">✕</button>
+  </div>
+  <div class="money-float-board" id="moneyFloatBoard"></div>
+</div>
+
+<!-- Intro Money Board (shown at game start, then shrinks to button) -->
+<div class="money-intro-overlay" id="moneyIntroOverlay">
+  <div class="money-intro-card" id="moneyIntroCard">
+    <div class="money-intro-title">💰 全部 26 个奖金</div>
+    <div class="money-intro-board" id="moneyIntroBoard"></div>
+  </div>
+</div>
+
+<!-- Banker Overlay -->
+<div class="banker-overlay" id="bankerOverlay">
+  <div class="banker-card">
+    <div class="banker-title">📞 <span class="phone-ring">☎</span> 资本家的电话</div>
+    <div class="banker-icon">🎩</div>
+    <div class="banker-offer-label">资本家出价买断你的手提箱</div>
+    <div class="banker-offer-amount" id="bankerOfferAmount">$0</div>
+    <div class="banker-expected" id="bankerExpected"></div>
+
+    <div class="counter-panel" id="counterPanel">
+      <div class="counter-hint">输入你的还价金额（必须高于资本家报价）</div>
+      <div class="counter-range" id="counterRange"></div>
+      <div class="counter-input-row">
+        <span style="color:var(--gold); font-size:1.5rem;">$</span>
+        <input type="number" class="counter-input" id="counterInput" placeholder="还价金额">
+        <button class="btn btn-counter" style="margin:0; padding:12px 28px; font-size:1.125rem;" onclick="submitCounterOffer()">提交</button>
+      </div>
+    </div>
+
+    <div class="banker-actions" id="bankerActions">
+      <button class="btn btn-deal" onclick="playerDeal()">成交</button>
+      <button class="btn btn-no-deal" onclick="playerNoDeal()">不成交</button>
+      <button class="btn btn-counter" id="btnCounterOffer" onclick="showCounterPanel()">还价</button>
+    </div>
+  </div>
+</div>
+
+<!-- Case Opening Overlay -->
+<div class="case-opening-overlay" id="caseOpeningOverlay">
+  <div class="opening-case">
+    <div class="case-icon-big" id="openingCaseIcon">💼</div>
+    <div class="opening-case-label" id="openingCaseLabel" style="display:none;"></div>
+    <div class="opening-amount" id="openingAmount"></div>
+  </div>
+</div>
+
+<!-- Counter Result Overlay -->
+<div class="counter-result-overlay" id="counterResultOverlay">
+  <div class="counter-result-card" id="counterResultCard">
+    <div class="counter-result-icon" id="counterResultIcon"></div>
+    <div class="counter-result-text" id="counterResultText"></div>
+    <div class="counter-result-sub" id="counterResultSub"></div>
+  </div>
+</div>
+
+<!-- Result Overlay -->
+<div class="result-overlay" id="resultOverlay">
+  <div class="result-card">
+    <div class="result-title" id="resultTitle">游戏结束</div>
+    <div class="result-amount" id="resultAmount">$0</div>
+    <div class="result-detail" id="resultDetail"></div>
+    <button class="btn btn-start" onclick="resetGame()">再玩一局</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== Game Constants =====
+const AMOUNTS = [
+  0.01, 1, 5, 10, 25, 50, 75, 100, 200, 300, 400, 500, 750,
+  1000, 5000, 10000, 25000, 50000, 75000, 100000, 200000, 300000, 400000, 500000, 750000, 1000000
+];
+
+const ROUND_STRUCTURE = [6, 5, 4, 3, 2, 1, 1, 1, 1];
+
+const BANKER_PERCENTAGES = [0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.80, 0.85, 0.90];
+
+// 轮次名称（索引 0-8 共 9 轮，最后一轮为第九轮）
+const ROUND_NAMES = [
+  '第一轮', '第二轮', '第三轮', '第四轮', '第五轮',
+  '第六轮', '第七轮', '第八轮', '第九轮'
+];
+
+// 最后一轮（第九轮）：不再有资本家报价，直接进入换箱环节
+const FINAL_ROUND_INDEX = ROUND_STRUCTURE.length - 1;
+
+// ===== Game State =====
+let gameState = {
+  id: 0,
+  phase: 'idle',
+  round: 0,
+  casesOpenedThisRound: 0,
+  cases: [],
+  selectedCaseId: null,
+  openedCaseIds: [],
+  remainingAmounts: [],
+  expectedValue: 0,
+  counterOfferUsed: false,
+  currentBankerOffer: 0,
+  history: [],
+  finalWinnings: 0,
+};
+
+// 全局局号计数器：每次开始新游戏递增，用于异步流程的中断检测
+let gameSessionId = 0;
+
+// 开箱锁：防止在动画/资本家报价/还价结果展示期间点击箱子
+// true = 禁止点击；只有 startRound 明确开放时才 false
+let caseOpeningLock = false;
+
+// 检查某个异步流程是否仍然有效（游戏未被重置/未切换到新局）
+function isSessionValid(sessionId) {
+  return sessionId === undefined || gameState.id === sessionId;
+}
+
+// ===== Utility Functions =====
+function formatMoney(amount) {
+  if (amount < 1 && amount > 0) return '$' + amount.toFixed(2);
+  if (amount >= 1000) return '$' + amount.toLocaleString('en-US', { maximumFractionDigits: 0 });
+  return '$' + amount.toFixed(amount % 1 === 0 ? 0 : 2);
+}
+
+function formatMoneyShort(amount) {
+  if (amount < 1 && amount > 0) return '1¢';
+  if (amount >= 1000000) return '$1M';
+  if (amount >= 1000) return '$' + (amount / 1000).toFixed(amount >= 10000 ? 0 : 1) + 'K';
+  return '$' + amount.toFixed(0);
+}
+
+function showToast(message, duration = 2500) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), duration);
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// 安全地设置操作面板文案（元素缺失时自动补回，避免中断整个流程）
+function setAction(msg, sub) {
+  let msgEl = document.getElementById('actionMessage');
+  let subEl = document.getElementById('actionSubMessage');
+
+  if (!msgEl || !subEl) {
+    const panel = document.getElementById('actionPanel');
+    if (panel) {
+      panel.innerHTML = `
+        <div class="action-message" id="actionMessage"></div>
+        <div class="action-submessage" id="actionSubMessage"></div>
+        <button class="btn btn-start" id="btnStart" onclick="startGame()" style="display:none;">开始游戏</button>
+      `;
+      msgEl = document.getElementById('actionMessage');
+      subEl = document.getElementById('actionSubMessage');
+    }
+  }
+
+  if (msgEl && msg !== undefined) msgEl.textContent = msg;
+  if (subEl && sub !== undefined) subEl.textContent = sub;
+}
+
+// ===== Local Storage Stats =====
+const STORAGE_KEY = 'dealOrNoDeal_stats';
+
+function loadStats() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return { totalGames: 0, totalWinnings: 0, millionWins: 0 };
+}
+
+function saveStats(stats) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
+  } catch(e) {}
+}
+
+function recordGameResult(winnings) {
+  const stats = loadStats();
+  stats.totalGames++;
+  stats.totalWinnings += winnings;
+  if (winnings >= 1000000) stats.millionWins++;
+  saveStats(stats);
+}
+
+function updateStatsDisplay() {
+  const stats = loadStats();
+  document.getElementById('statMillions').textContent = stats.millionWins + ' 次';
+  const avg = stats.totalGames > 0 ? stats.totalWinnings / stats.totalGames : 0;
+  document.getElementById('statAvgWin').textContent = formatMoney(Math.round(avg));
+  document.getElementById('statTotalGames').textContent = stats.totalGames;
+}
+
+// ===== Render Floating Money Board =====
+// 原版显示方式：$ 符号在左，数字右对齐，无千位分隔符
+function buildMoneyCell(amt, extraClass) {
+  const cell = document.createElement('div');
+  cell.className = 'money-cell active' + (extraClass ? ' ' + extraClass : '');
+
+  const dollar = document.createElement('span');
+  dollar.className = 'mc-dollar';
+  dollar.textContent = '$';
+
+  const value = document.createElement('span');
+  value.className = 'mc-value';
+  // 原版格式：.01 / 1 / 5 ... 1,000 / 1,000,000
+  value.textContent = amt < 1
+    ? amt.toFixed(2).replace(/^0/, '')   // 0.01 -> .01
+    : amt.toLocaleString('en-US');
+
+  cell.appendChild(dollar);
+  cell.appendChild(value);
+  return cell;
+}
+
+function renderMoneyBoard() {
+  const board = document.getElementById('moneyFloatBoard');
+  board.innerHTML = '';
+
+  // 按金额升序追加，配合 grid-auto-flow:column => 左列小面额、右列大面额（原版布局）
+  AMOUNTS.forEach(amt => {
+    const cell = buildMoneyCell(amt);
+    cell.id = 'money-' + amt;
+    board.appendChild(cell);
+  });
+}
+
+function renderIntroMoneyBoard() {
+  const board = document.getElementById('moneyIntroBoard');
+  board.innerHTML = '';
+
+  // 同上：左列小面额、右列大面额
+  AMOUNTS.forEach(amt => {
+    board.appendChild(buildMoneyCell(amt));
+  });
+}
+
+function updateMoneyBoard() {
+  let remainingCount = 0;
+  AMOUNTS.forEach(amt => {
+    const cell = document.getElementById('money-' + amt);
+    if (!cell) return;
+    const isEliminated = gameState.openedCaseIds.some(id => {
+      const c = gameState.cases.find(cs => cs.id === id);
+      return c && c.amount === amt;
+    });
+    if (isEliminated) {
+      cell.classList.remove('active');
+      cell.classList.add('eliminated');
+      if (amt >= 1000) cell.classList.add('high-value');
+      else cell.classList.add('low-value');
+    } else {
+      cell.classList.add('active');
+      cell.classList.remove('eliminated', 'high-value', 'low-value');
+      remainingCount++;
+    }
+  });
+
+  // Update remaining count badge
+  const btn = document.getElementById('moneyToggleBtn');
+  btn.setAttribute('data-remaining', remainingCount);
+  document.getElementById('moneyRemainingText').textContent = remainingCount + ' 个剩余';
+}
+
+// ===== Floating Money Panel Toggle =====
+function toggleMoneyPanel() {
+  const panel = document.getElementById('moneyFloatPanel');
+  if (panel.classList.contains('open')) {
+    closeMoneyPanel();
+  } else {
+    openMoneyPanel();
+  }
+}
+
+function openMoneyPanel() {
+  document.getElementById('moneyFloatPanel').classList.add('open');
+  document.getElementById('moneyBackdrop').classList.add('show');
+}
+
+function closeMoneyPanel() {
+  document.getElementById('moneyFloatPanel').classList.remove('open');
+  document.getElementById('moneyBackdrop').classList.remove('show');
+}
+
+// ===== Show Intro Money Board then Shrink to Button =====
+async function showIntroMoneyBoard(sessionId) {
+  renderIntroMoneyBoard();
+  const overlay = document.getElementById('moneyIntroOverlay');
+  const card = document.getElementById('moneyIntroCard');
+
+  overlay.classList.add('show');
+  card.classList.remove('shrinking');
+
+  // Show for 2 seconds
+  await sleep(2000);
+  if (!isSessionValid(sessionId)) return;
+
+  // Play shrink animation
+  card.classList.add('shrinking');
+
+  await sleep(600);
+  if (!isSessionValid(sessionId)) return;
+
+  overlay.classList.remove('show');
+
+  // Show the floating button
+  document.getElementById('moneyToggleBtn').style.display = 'flex';
+}
+
+// ===== Render Briefcases =====
+function renderBriefcases() {
+  const grid = document.getElementById('briefcasesGrid');
+  grid.innerHTML = '';
+
+  for (let i = 1; i <= 26; i++) {
+    const item = document.createElement('div');
+    item.className = 'briefcase-item';
+    item.id = 'case-' + i;
+    item.dataset.caseId = i;
+
+    const cs = gameState.cases.find(c => c.id === i);
+
+    let innerHTML = '<div class="case-icon">💼</div>';
+    innerHTML += '<div class="case-number">' + i + '</div>';
+
+    if (cs && cs.opened) {
+      innerHTML += '<div class="case-amount">' + formatMoneyShort(cs.amount) + '</div>';
+      item.classList.add('opened');
+    }
+
+    if (cs && cs.selected) {
+      item.classList.add('selected');
+    }
+
+    item.innerHTML = innerHTML;
+
+    if (!cs || (!cs.opened && !cs.selected && gameState.phase === 'opening' && !caseOpeningLock)) {
+      item.onclick = () => onCaseClick(i);
+    } else if (gameState.phase === 'selecting') {
+      item.onclick = () => selectCase(i);
+    }
+
+    grid.appendChild(item);
+  }
+}
+
+// ===== Start Game =====
+async function startGame() {
+  // 防止重复点击"开始游戏"造成多个流程并行
+  if (gameState.phase === 'selecting' || gameState.phase === 'opening' ||
+      gameState.phase === 'banker' || gameState.phase === 'swap') {
+    return;
+  }
+
+  // 清理上一局可能残留的覆盖层
+  document.getElementById('counterResultOverlay').classList.remove('show');
+  document.getElementById('caseOpeningOverlay').classList.remove('show');
+  document.getElementById('moneyIntroOverlay').classList.remove('show');
+  document.getElementById('moneyIntroCard').classList.remove('shrinking');
+
+  const sessionId = ++gameSessionId;
+  const shuffled = [...AMOUNTS].sort(() => Math.random() - 0.5);
+
+  // 重置开箱锁
+  caseOpeningLock = false;
+
+  gameState = {
+    id: sessionId,
+    phase: 'selecting',
+    round: 0,
+    casesOpenedThisRound: 0,
+    cases: [],
+    selectedCaseId: null,
+    openedCaseIds: [],
+    remainingAmounts: [...AMOUNTS],
+    expectedValue: 0,
+    counterOfferUsed: false,
+    currentBankerOffer: 0,
+    history: [],
+    finalWinnings: 0,
+  };
+
+  for (let i = 1; i <= 26; i++) {
+    gameState.cases.push({
+      id: i,
+      amount: shuffled[i - 1],
+      opened: false,
+      selected: false,
+    });
+  }
+
+  renderMoneyBoard();
+  renderBriefcases();
+  updateStatus();
+
+  // 重建操作面板（确保 actionMessage / actionSubMessage / btnStart 的 id 存在）
+  const actionPanel = document.getElementById('actionPanel');
+  actionPanel.innerHTML = `
+    <div class="action-message" id="actionMessage">🎯 选择你的幸运手提箱！</div>
+    <div class="action-submessage" id="actionSubMessage">从 1-26 号中选一个</div>
+    <button class="btn btn-start" id="btnStart" onclick="startGame()" style="display:none;">开始游戏</button>
+  `;
+
+  // Hide history and stats during gameplay
+  document.getElementById('historyContainer').style.display = 'none';
+  document.getElementById('statsDisplay').style.display = 'none';
+  document.getElementById('historyEntries').innerHTML = '';
+  addHistory('🎮 游戏开始！26个手提箱已随机分配金额。');
+
+  // Show intro money board, then shrink to button
+  await showIntroMoneyBoard(sessionId);
+}
+
+// ===== Select Initial Case =====
+function selectCase(id) {
+  if (gameState.phase !== 'selecting') return;
+
+  gameState.selectedCaseId = id;
+  const cs = gameState.cases.find(c => c.id === id);
+  cs.selected = true;
+
+  gameState.phase = 'opening';
+  gameState.round = 0;
+  gameState.casesOpenedThisRound = 0;
+
+  renderBriefcases();
+  updateStatus();
+
+  showToast('已选择 ' + id + ' 号手提箱作为你的幸运箱！');
+  addHistory('🎯 你选择了 ' + id + ' 号手提箱。');
+
+  startRound();
+}
+
+// ===== Start a Round =====
+function startRound() {
+  const casesToOpen = ROUND_STRUCTURE[gameState.round];
+  const remaining = casesToOpen - gameState.casesOpenedThisRound;
+
+  if (remaining > 0) {
+    const roundName = ROUND_NAMES[gameState.round] || ('第' + (gameState.round + 1) + '轮');
+    setAction(
+      '📋 ' + roundName + '：选择 ' + remaining + ' 个箱子打开',
+      '消除小金额，保留大金额！'
+    );
+    updateStatus();
+  }
+}
+
+// ===== Handle Case Click =====
+async function onCaseClick(id) {
+  if (gameState.phase !== 'opening') return;
+  // 开箱锁：动画/报价期间禁止额外点击
+  if (caseOpeningLock) return;
+
+  const sessionId = gameState.id;
+
+  const cs = gameState.cases.find(c => c.id === id);
+  if (!cs || cs.opened || cs.selected) return;
+
+  // 立即上锁，防止同一轮内连续快速点击多个箱子
+  caseOpeningLock = true;
+
+  cs.opened = true;
+  gameState.openedCaseIds.push(id);
+
+  const idx = gameState.remainingAmounts.indexOf(cs.amount);
+  if (idx > -1) gameState.remainingAmounts.splice(idx, 1);
+
+  gameState.casesOpenedThisRound++;
+
+  await showCaseOpening(id, cs.amount, sessionId);
+
+  // 游戏已被重置或切换到新局，放弃本次后续流程
+  if (!isSessionValid(sessionId)) return;
+
+  renderBriefcases();
+  updateMoneyBoard();
+  updateStatus();
+
+  const casesToOpen = ROUND_STRUCTURE[gameState.round];
+  if (gameState.casesOpenedThisRound >= casesToOpen) {
+    // 本轮已开完
+    await sleep(500);
+    if (!isSessionValid(sessionId)) return;
+
+    // 最后一轮（第九轮）：不再有资本家报价，直接进入换箱环节
+    if (gameState.round >= FINAL_ROUND_INDEX) {
+      finalSwap();
+      return;
+    }
+
+    // 其他轮次 → 进入资本家报价，保持锁定
+    bankerCall();
+  } else {
+    // 本轮还需开箱 → 解锁，允许继续点击
+    caseOpeningLock = false;
+    // 重新渲染以绑定 onclick（渲染时检查锁状态）
+    renderBriefcases();
+    startRound();
+  }
+}
+
+// ===== Case Opening Animation =====
+async function showCaseOpening(caseId, amount, sessionId) {
+  const overlay = document.getElementById('caseOpeningOverlay');
+  const icon = document.getElementById('openingCaseIcon');
+  const amountEl = document.getElementById('openingAmount');
+  const labelEl = document.getElementById('openingCaseLabel');
+
+  icon.textContent = '💼';
+  amountEl.textContent = '';
+  amountEl.style.color = amount >= 50000 ? 'var(--red)' : (amount <= 100 ? 'var(--green)' : 'var(--gold)');
+
+  // 显示箱子编号，让玩家知道正在打开哪个箱子
+  if (labelEl) {
+    labelEl.textContent = caseId ? '打开 ' + caseId + ' 号手提箱' : '';
+    labelEl.style.display = caseId ? 'block' : 'none';
+  }
+
+  overlay.classList.add('show');
+
+  await sleep(400);
+  if (!isSessionValid(sessionId)) return;
+
+  amountEl.textContent = formatMoney(amount);
+
+  await sleep(1000);
+  if (!isSessionValid(sessionId)) return;
+
+  overlay.classList.remove('show');
+
+  await sleep(150);
+}
+
+// ===== Banker's Call =====
+function bankerCall() {
+  gameState.phase = 'banker';
+
+  const allRemaining = gameState.remainingAmounts.slice();
+  const sum = allRemaining.reduce((a, b) => a + b, 0);
+  gameState.expectedValue = sum / allRemaining.length;
+
+  const basePercent = BANKER_PERCENTAGES[gameState.round];
+  const randomFactor = 0.85 + Math.random() * 0.3;
+  gameState.currentBankerOffer = Math.round(gameState.expectedValue * basePercent * randomFactor);
+
+  if (gameState.currentBankerOffer < 1) gameState.currentBankerOffer = Math.round(gameState.expectedValue * basePercent);
+
+  const highValuesLeft = allRemaining.filter(a => a >= 100000).length;
+  if (highValuesLeft === 0 && allRemaining.length > 2) {
+    gameState.currentBankerOffer = Math.round(gameState.currentBankerOffer * 0.7);
+  }
+
+  document.getElementById('bankerOfferAmount').textContent = formatMoney(gameState.currentBankerOffer);
+  document.getElementById('bankerExpected').textContent =
+    '期望值: ' + formatMoney(gameState.expectedValue) + '\n报价占期望值: ' +
+    Math.round((gameState.currentBankerOffer / gameState.expectedValue) * 100) + '%';
+
+  document.getElementById('counterPanel').classList.remove('show');
+  document.getElementById('bankerActions').style.display = 'flex';
+
+  const btnCounter = document.getElementById('btnCounterOffer');
+  if (gameState.counterOfferUsed) {
+    btnCounter.disabled = true;
+    btnCounter.style.opacity = '0.3';
+  } else {
+    btnCounter.disabled = false;
+    btnCounter.style.opacity = '1';
+  }
+
+  document.getElementById('bankerOverlay').classList.add('show');
+
+  const roundName = ROUND_NAMES[gameState.round] || ('第' + (gameState.round + 1) + '轮');
+  addHistory('📞 ' + roundName + '结束 — 资本家报价: ' + formatMoney(gameState.currentBankerOffer) + '（期望值: ' + formatMoney(gameState.expectedValue) + '）');
+}
+
+// ===== Player Deal =====
+function playerDeal() {
+  // 防重入：只有在报价阶段才能成交
+  if (gameState.phase !== 'banker') return;
+
+  gameState.phase = 'finished';
+  document.getElementById('bankerOverlay').classList.remove('show');
+
+  const winnings = gameState.currentBankerOffer;
+  gameState.finalWinnings = winnings;
+
+  addHistory('✅ 成交！你获得了 ' + formatMoney(winnings));
+
+  const cs = gameState.cases.find(c => c.id === gameState.selectedCaseId);
+  const caseAmount = cs.amount;
+
+  showResult(
+    'deal-good', winnings,
+    '你接受了资本家的报价，获得 ' + formatMoney(winnings) + '。\n你的手提箱（' + gameState.selectedCaseId + '号）里实际是 ' + formatMoney(caseAmount) + '。',
+    winnings > caseAmount ? '🎉 赚了！比手提箱里的多了 ' + formatMoney(winnings - caseAmount) :
+      (winnings < caseAmount ? '😅 可惜！手提箱里本来有 ' + formatMoney(caseAmount) + '，你少拿了 ' + formatMoney(caseAmount - winnings) : '🤝 刚刚好！')
+  );
+}
+
+// ===== Player No Deal =====
+function playerNoDeal() {
+  // 防重入：只有在报价阶段才能执行"不成交"
+  if (gameState.phase !== 'banker') return;
+
+  document.getElementById('bankerOverlay').classList.remove('show');
+
+  addHistory('❌ 不成交！继续游戏。');
+
+  gameState.round++;
+  gameState.casesOpenedThisRound = 0;
+
+  const unopenedCases = gameState.cases.filter(c => !c.opened && !c.selected);
+  if (unopenedCases.length === 0 || gameState.round >= ROUND_STRUCTURE.length) {
+    finalSwap();
+  } else {
+    gameState.phase = 'opening';
+    // 解锁：允许新一轮开箱
+    caseOpeningLock = false;
+    renderBriefcases();
+    startRound();
+  }
+}
+
+// ===== Counter Offer =====
+function showCounterPanel() {
+  if (gameState.counterOfferUsed) {
+    showToast('你已经用过了还价机会！');
+    return;
+  }
+
+  const bankerOffer = gameState.currentBankerOffer;
+  const ev = gameState.expectedValue;
+  const maxCounter = Math.ceil(ev * 1.15);
+
+  document.getElementById('counterRange').textContent =
+    '还价范围: ' + formatMoney(bankerOffer + 1) + ' ~ ' + formatMoney(maxCounter) + '（不能等于报价）';
+
+  const input = document.getElementById('counterInput');
+  input.min = bankerOffer + 1;
+  input.max = maxCounter;
+  input.value = bankerOffer + 1;
+  input.placeholder = formatMoney(bankerOffer + 1);
+
+  document.getElementById('bankerActions').style.display = 'none';
+  document.getElementById('counterPanel').classList.add('show');
+  setTimeout(() => input.focus(), 100);
+}
+
+function submitCounterOffer() {
+  const input = document.getElementById('counterInput');
+  let playerOffer = parseFloat(input.value);
+
+  const bankerOffer = gameState.currentBankerOffer;
+  const ev = gameState.expectedValue;
+
+  // Validation: must be > banker's offer (cannot be equal)
+  if (!playerOffer || playerOffer <= 0) {
+    showToast('请输入有效的金额');
+    return;
+  }
+
+  if (playerOffer <= bankerOffer) {
+    showToast('还价必须高于资本家报价 ' + formatMoney(bankerOffer) + '！');
+    return;
+  }
+
+  if (playerOffer > 1000000) {
+    showToast('还价不能超过 $1,000,000');
+    return;
+  }
+
+  gameState.counterOfferUsed = true;
+  updateStatus();
+
+  document.getElementById('counterPanel').classList.remove('show');
+  document.getElementById('bankerActions').style.display = 'none';
+
+  // Banker evaluates counter offer
+  const ratio = playerOffer / ev;
+
+  let bankerAccepts = false;
+
+  if (playerOffer <= bankerOffer * 1.05) {
+    bankerAccepts = Math.random() < 0.95;
+  } else if (ratio <= 0.8) {
+    bankerAccepts = Math.random() < 0.85;
+  } else if (ratio <= 0.95) {
+    bankerAccepts = Math.random() < 0.60;
+  } else if (ratio <= 1.0) {
+    bankerAccepts = Math.random() < 0.45;
+  } else if (ratio <= 1.1) {
+    bankerAccepts = Math.random() < 0.20;
+  } else {
+    bankerAccepts = false;
+  }
+
+  // Show counter result animation in center of screen
+  showCounterResult(bankerAccepts, playerOffer, bankerOffer, ev, gameState.id);
+}
+
+// ===== Show Counter Result Animation =====
+async function showCounterResult(accepted, playerOffer, bankerOffer, ev, sessionId) {
+  const overlay = document.getElementById('counterResultOverlay');
+  const card = document.getElementById('counterResultCard');
+  const icon = document.getElementById('counterResultIcon');
+  const text = document.getElementById('counterResultText');
+  const sub = document.getElementById('counterResultSub');
+
+  if (accepted) {
+    card.className = 'counter-result-card accept';
+    icon.textContent = '🤝';
+    text.textContent = '资本家接受了你的还价！';
+    sub.innerHTML = formatMoney(playerOffer);
+
+    addHistory('🤝 资本家接受了你的还价 ' + formatMoney(playerOffer) + '！');
+
+    overlay.classList.add('show');
+
+    await sleep(2000);
+    if (!isSessionValid(sessionId)) return;
+
+    overlay.classList.remove('show');
+    document.getElementById('bankerOverlay').classList.remove('show');
+
+    gameState.finalWinnings = playerOffer;
+    const cs = gameState.cases.find(c => c.id === gameState.selectedCaseId);
+
+    showResult(
+      'deal-good', playerOffer,
+      '资本家接受了你的还价！你获得 ' + formatMoney(playerOffer) + '。\n你的手提箱（' + gameState.selectedCaseId + '号）里实际是 ' + formatMoney(cs.amount) + '。',
+      playerOffer > cs.amount ? '🎉 赚了！比手提箱多了 ' + formatMoney(playerOffer - cs.amount) :
+        (playerOffer < cs.amount ? '😅 手提箱本来有 ' + formatMoney(cs.amount) : '🤝 刚好相等！')
+    );
+  } else {
+    card.className = 'counter-result-card reject';
+    icon.textContent = '😤';
+    text.textContent = '资本家拒绝了你的还价！';
+    sub.innerHTML = '你的还价: ' + formatMoney(playerOffer) + '<br>继续开箱，赌一把！';
+
+    addHistory('😤 资本家拒绝了你的还价 ' + formatMoney(playerOffer) + '！');
+
+    overlay.classList.add('show');
+
+    await sleep(2000);
+    if (!isSessionValid(sessionId)) return;
+
+    overlay.classList.remove('show');
+    document.getElementById('bankerOverlay').classList.remove('show');
+
+    // Reject -> directly proceed to next round (no Deal/No Deal choice)
+    addHistory('❌ 还价被拒，直接进入下一轮。');
+
+    gameState.round++;
+    gameState.casesOpenedThisRound = 0;
+
+    const unopenedCases = gameState.cases.filter(c => !c.opened && !c.selected);
+    if (unopenedCases.length === 0 || gameState.round >= ROUND_STRUCTURE.length) {
+      finalSwap();
+    } else {
+      gameState.phase = 'opening';
+      // 解锁：允许新一轮开箱
+      caseOpeningLock = false;
+      renderBriefcases();
+      startRound();
+    }
+  }
+}
+
+// ===== Final Swap =====
+// 最后一轮结束后：没有资本家报价，直接询问是否交换箱子
+function finalSwap() {
+  gameState.phase = 'swap';
+
+  const unopenedCases = gameState.cases.filter(c => !c.opened && !c.selected);
+
+  if (unopenedCases.length === 0) {
+    revealFinalCase();
+    return;
+  }
+
+  document.getElementById('bankerOverlay').classList.remove('show');
+
+  showSwapChoice(unopenedCases);
+  updateStatus();
+}
+
+// 显示"换还是不换"的选择界面（可选中多个候选箱子）
+function showSwapChoice(candidates) {
+  const myCase = gameState.cases.find(c => c.id === gameState.selectedCaseId);
+  const actionPanel = document.getElementById('actionPanel');
+
+  // 若候选多于一个，提供全部候选可选
+  const swapButtons = candidates.map(c =>
+    `<button class="btn btn-swap" onclick="swapCase(${c.id})">换成 ${c.id}号</button>`
+  ).join('');
+
+  actionPanel.innerHTML = `
+    <div class="action-message" id="actionMessage">🔀 换还是不换？</div>
+    <div class="action-submessage" id="actionSubMessage">
+      你的 ${myCase.id}号 vs 台上 ${candidates.map(c => c.id + '号').join(' / ')}<br>
+      最终结果只有两种可能，选择一个吧！
+    </div>
+    <div style="margin: 8px 0;">
+      <button class="btn btn-keep" onclick="keepCase()">保留 ${myCase.id}号</button>
+      ${swapButtons}
+    </div>
+  `;
+
+  addHistory('🔀 最终抉择！你的 ' + myCase.id + '号 vs ' + candidates.map(c => c.id + '号').join('/') + '，请选择是否交换。');
+}
+
+function finalDeal(amount) {
+  gameState.finalWinnings = amount;
+  const cs = gameState.cases.find(c => c.id === gameState.selectedCaseId);
+  addHistory('✅ 最终成交！获得 ' + formatMoney(amount));
+  showResult('deal-good', amount,
+    '你接受了资本家的最终报价，获得 ' + formatMoney(amount) + '。\n你的手提箱（' + gameState.selectedCaseId + '号）里是 ' + formatMoney(cs.amount) + '。',
+    amount > cs.amount ? '🎉 赚了！' : (amount < cs.amount ? '😅 手提箱本来有 ' + formatMoney(cs.amount) : '🤝 刚好！')
+  );
+}
+
+function keepCase() {
+  const cs = gameState.cases.find(c => c.id === gameState.selectedCaseId);
+  gameState.finalWinnings = cs.amount;
+  revealFinalResult();
+}
+
+function swapCase(otherId) {
+  const oldCase = gameState.cases.find(c => c.id === gameState.selectedCaseId);
+  const newCase = gameState.cases.find(c => c.id === otherId);
+
+  oldCase.selected = false;
+  newCase.selected = true;
+  gameState.selectedCaseId = otherId;
+
+  addHistory('🔀 你将手提箱从 ' + oldCase.id + ' 号换成了 ' + newCase.id + ' 号！');
+
+  gameState.finalWinnings = newCase.amount;
+  revealFinalResult();
+}
+
+function revealFinalCase() {
+  const cs = gameState.cases.find(c => c.id === gameState.selectedCaseId);
+  gameState.finalWinnings = cs.amount;
+  revealFinalResult();
+}
+
+async function revealFinalResult() {
+  const sessionId = gameState.id;
+  const cs = gameState.cases.find(c => c.id === gameState.selectedCaseId);
+  await showCaseOpening(cs.id, cs.amount, sessionId);
+
+  // 游戏已被重置，放弃后续流程
+  if (!isSessionValid(sessionId)) return;
+
+  renderBriefcases();
+
+  const isWin = cs.amount >= 100000;
+  const isJackpot = cs.amount === 1000000;
+
+  let title = '游戏结束';
+  let titleClass = 'lose';
+  let extra = '';
+
+  if (isJackpot) {
+    title = '🎉 百万大奖！';
+    titleClass = 'win';
+    extra = '你赢得了最高奖金 $1,000,000！';
+  } else if (isWin) {
+    title = '🏆 不错的结果！';
+    titleClass = 'win';
+    extra = '你赢得了 ' + formatMoney(cs.amount) + '！';
+  } else if (cs.amount <= 1) {
+    title = '😢 太遗憾了';
+    titleClass = 'lose';
+    extra = '你的手提箱里只有 ' + formatMoney(cs.amount) + '...';
+  } else {
+    title = '游戏结束';
+    titleClass = 'lose';
+    extra = '你赢得了 ' + formatMoney(cs.amount);
+  }
+
+  addHistory('💼 你的 ' + cs.id + ' 号手提箱里有 ' + formatMoney(cs.amount) + '！最终获得: ' + formatMoney(gameState.finalWinnings));
+
+  showResult(titleClass === 'win' ? 'deal-good' : 'deal-bad', gameState.finalWinnings,
+    '你的 ' + cs.id + ' 号手提箱里有 ' + formatMoney(cs.amount) + '。',
+    extra
+  );
+}
+
+// ===== Show Result =====
+function showResult(type, amount, detail, extra) {
+  gameState.phase = 'finished';
+
+  // Record stats to localStorage
+  recordGameResult(amount);
+
+  const overlay = document.getElementById('resultOverlay');
+  const title = document.getElementById('resultTitle');
+  const amountEl = document.getElementById('resultAmount');
+  const detailEl = document.getElementById('resultDetail');
+
+  if (type === 'deal-good') {
+    title.textContent = '🎉 恭喜你！';
+    title.className = 'result-title win';
+    amountEl.className = 'result-amount win';
+  } else if (type === 'deal-bad') {
+    title.textContent = '😢 游戏结束';
+    title.className = 'result-title lose';
+    amountEl.className = 'result-amount lose';
+  } else {
+    title.textContent = '🤝 成交！';
+    title.className = 'result-title win';
+    amountEl.className = 'result-amount win';
+  }
+
+  amountEl.textContent = formatMoney(amount);
+  detailEl.innerHTML = detail.replace(/\n/g, '<br>') + '<br><br><span style="color:var(--gold);">' + extra + '</span>';
+
+  overlay.classList.add('show');
+}
+
+// ===== Update Status Bar =====
+function updateStatus() {
+  const roundEl = document.getElementById('statusRound');
+  const casesLeftEl = document.getElementById('statusCasesLeft');
+  const selectedEl = document.getElementById('statusSelectedCase');
+  const counterEl = document.getElementById('statusCounter');
+
+  if (gameState.phase === 'idle') {
+    roundEl.textContent = '—';
+    casesLeftEl.textContent = '—';
+    selectedEl.textContent = '—';
+  } else if (gameState.phase === 'selecting') {
+    roundEl.textContent = '选择';
+    casesLeftEl.textContent = '—';
+    selectedEl.textContent = '待选';
+  } else {
+    const roundNames = ['R1', 'R2', 'R3', 'R4', 'R5', 'R6', 'R7', 'R8', 'R9'];
+    roundEl.textContent = gameState.phase === 'swap' || gameState.phase === 'finished' ? '最终' : roundNames[gameState.round] || '—';
+
+    const casesToOpen = ROUND_STRUCTURE[gameState.round] || 0;
+    const remaining = Math.max(0, casesToOpen - gameState.casesOpenedThisRound);
+    casesLeftEl.textContent = gameState.phase === 'opening' ? remaining + '/' + casesToOpen :
+      (gameState.phase === 'banker' ? '报价中' :
+       (gameState.phase === 'swap' ? '换箱' :
+        (gameState.phase === 'finished' ? '结束' : '—')));
+
+    selectedEl.textContent = gameState.selectedCaseId ? gameState.selectedCaseId + '号' : '—';
+  }
+
+  // 还价状态：进入换箱/结束阶段后不再有报价，还价按钮无意义
+  if (gameState.phase === 'swap' || gameState.phase === 'finished') {
+    counterEl.textContent = '—';
+    counterEl.style.color = 'var(--gray-dark)';
+  } else {
+    counterEl.textContent = gameState.counterOfferUsed ? '已用' : '可用';
+    counterEl.style.color = gameState.counterOfferUsed ? 'var(--gray-dark)' : 'var(--green)';
+  }
+}
+
+// ===== History Log =====
+function addHistory(text) {
+  gameState.history.push(text);
+  const entries = document.getElementById('historyEntries');
+  const div = document.createElement('div');
+  div.className = 'history-entry';
+  div.innerHTML = text;
+  entries.appendChild(div);
+  entries.scrollTop = entries.scrollHeight;
+}
+
+// ===== Reset Game =====
+function resetGame() {
+  // 让所有正在运行的异步流程失效（递增 sessionId 并改变 gameState.id）
+  gameSessionId++;
+
+  // 清理所有覆盖层
+  document.getElementById('resultOverlay').classList.remove('show');
+  document.getElementById('bankerOverlay').classList.remove('show');
+  document.getElementById('counterResultOverlay').classList.remove('show');
+  document.getElementById('caseOpeningOverlay').classList.remove('show');
+  document.getElementById('moneyIntroOverlay').classList.remove('show');
+  document.getElementById('moneyIntroCard').classList.remove('shrinking');
+  document.getElementById('moneyToggleBtn').style.display = 'none';
+  closeMoneyPanel();
+
+  const actionPanel = document.getElementById('actionPanel');
+  actionPanel.innerHTML = `
+    <div class="action-message" id="actionMessage">欢迎来到一掷千金！</div>
+    <div class="action-submessage" id="actionSubMessage">点击下方按钮开始游戏，有机会赢得 $1,000,000</div>
+    <button class="btn btn-start" id="btnStart" onclick="startGame()">开始游戏</button>
+  `;
+
+  gameState = {
+    id: gameSessionId,
+    phase: 'idle',
+    round: 0,
+    casesOpenedThisRound: 0,
+    cases: [],
+    selectedCaseId: null,
+    openedCaseIds: [],
+    remainingAmounts: [],
+    expectedValue: 0,
+    counterOfferUsed: false,
+    currentBankerOffer: 0,
+    history: [],
+    finalWinnings: 0,
+  };
+
+  renderBriefcases();
+  updateStatus();
+  updateStatsDisplay();
+
+  // Show history and stats on title screen
+  document.getElementById('historyContainer').style.display = 'block';
+  document.getElementById('statsDisplay').style.display = 'flex';
+}
+
+// ===== Initialize =====
+renderBriefcases();
+updateStatsDisplay();
+</script>
+
+</body>
+</html>
