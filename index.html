@@ -426,11 +426,25 @@ body::before {
   pointer-events: auto;
 }
 
+/* 奖金面板打开时，隐藏底层的操作提示（含"选择你的幸运手提箱！"），
+   避免文字从面板边缘露出造成视觉残留 */
+body.money-panel-open .action-panel,
+body.money-panel-open .action-message,
+body.money-panel-open .action-submessage {
+  visibility: hidden;
+}
+
 .money-float-panel {
   position: fixed;
-  bottom: 130px;
-  right: 14px;
+  /* 底部对齐悬浮于切换按钮上方，并用 max-height 保证标题栏始终可见（不被裁掉） */
+  bottom: calc(142px + env(safe-area-inset-bottom));
+  right: 10px;
   width: 360px;
+  max-width: calc(100vw - 20px);
+  max-height: calc(100vh - 162px);
+  max-height: calc(100dvh - 162px);
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(160deg, #2a1a08 0%, #120b04 100%);
   border: 3px solid #6b4a15;
   border-radius: 8px;
@@ -454,6 +468,7 @@ body::before {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex: 0 0 auto;
   margin-bottom: 8px;
   padding: 4px 6px;
   background: linear-gradient(180deg, #1a1208, #0d0803);
@@ -494,6 +509,11 @@ body::before {
   grid-auto-flow: column;
   grid-template-rows: repeat(13, auto);
   gap: 3px;
+  /* 内容超出时面板内部滚动，保证 26 个奖金都能看到 */
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .money-float-board::-webkit-scrollbar { width: 4px; }
@@ -1369,11 +1389,14 @@ function toggleMoneyPanel() {
 function openMoneyPanel() {
   document.getElementById('moneyFloatPanel').classList.add('open');
   document.getElementById('moneyBackdrop').classList.add('show');
+  // 隐藏底层操作提示，避免"幸运箱"等文字从面板边缘露出
+  document.body.classList.add('money-panel-open');
 }
 
 function closeMoneyPanel() {
   document.getElementById('moneyFloatPanel').classList.remove('open');
   document.getElementById('moneyBackdrop').classList.remove('show');
+  document.body.classList.remove('money-panel-open');
 }
 
 // ===== Show Intro Money Board then Shrink to Button =====
