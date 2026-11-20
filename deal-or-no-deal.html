@@ -1613,13 +1613,8 @@ async function onCaseClick(id) {
     await sleep(500);
     if (!isSessionValid(sessionId)) return;
 
-    // 最后一轮（第九轮）：不再有资本家报价，直接进入换箱环节
-    if (gameState.round >= FINAL_ROUND_INDEX) {
-      finalSwap();
-      return;
-    }
-
-    // 其他轮次 → 进入资本家报价，保持锁定
+    // 所有轮次（含第九轮）开完箱子后均进入资本家报价
+    // 第九轮拒绝报价后，playerNoDeal() 中会检测 round 超出范围进入换箱环节
     bankerCall();
   } else {
     // 本轮还需开箱 → 解锁，允许继续点击
