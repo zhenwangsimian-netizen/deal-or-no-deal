@@ -1193,18 +1193,15 @@ const AMOUNTS = [
   1000, 5000, 10000, 25000, 50000, 75000, 100000, 200000, 300000, 400000, 500000, 750000, 1000000
 ];
 
-const ROUND_STRUCTURE = [6, 5, 4, 3, 2, 1, 1, 1, 1];
+const ROUND_STRUCTURE = [6, 5, 4, 3, 2, 1, 1, 1];
 
-const BANKER_PERCENTAGES = [0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.80, 0.85, 0.90];
+const BANKER_PERCENTAGES = [0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.80, 0.85];
 
-// 轮次名称（索引 0-8 共 9 轮，最后一轮为第九轮）
+// 轮次名称（索引 0-7 共 8 轮，第八轮拒绝后直接进入换箱环节）
 const ROUND_NAMES = [
   '第一轮', '第二轮', '第三轮', '第四轮', '第五轮',
-  '第六轮', '第七轮', '第八轮', '第九轮'
+  '第六轮', '第七轮', '第八轮'
 ];
-
-// 最后一轮（第九轮）：不再有资本家报价，直接进入换箱环节
-const FINAL_ROUND_INDEX = ROUND_STRUCTURE.length - 1;
 
 // ===== Game State =====
 let gameState = {
@@ -1613,8 +1610,8 @@ async function onCaseClick(id) {
     await sleep(500);
     if (!isSessionValid(sessionId)) return;
 
-    // 所有轮次（含第九轮）开完箱子后均进入资本家报价
-    // 第九轮拒绝报价后，playerNoDeal() 中会检测 round 超出范围进入换箱环节
+    // 所有轮次开完箱子后均进入资本家报价
+    // 第八轮拒绝报价后，playerNoDeal() 中会检测 round 超出范围进入换箱环节
     bankerCall();
   } else {
     // 本轮还需开箱 → 解锁，允许继续点击
@@ -1924,7 +1921,7 @@ function showSwapChoice(candidates) {
     <div class="action-message" id="actionMessage">🔀 换还是不换？</div>
     <div class="action-submessage" id="actionSubMessage">
       你的 ${myCase.id}号 vs 台上 ${candidates.map(c => c.id + '号').join(' / ')}<br>
-      最终结果只有两种可能，选择一个吧！
+      做出你的最终选择吧！
     </div>
     <div style="margin: 8px 0;">
       <button class="btn btn-keep" onclick="keepCase()">保留 ${myCase.id}号</button>
