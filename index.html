@@ -1193,14 +1193,17 @@ const AMOUNTS = [
   1000, 5000, 10000, 25000, 50000, 75000, 100000, 200000, 300000, 400000, 500000, 750000, 1000000
 ];
 
-const ROUND_STRUCTURE = [6, 5, 4, 3, 2, 1, 1, 1];
+// 26 个箱子，玩家先选 1 个幸运箱（不计轮数），剩余 25 个需开完
+// 轮次结构：6+5+4+3+2+1+1+1+1 = 25，共 9 轮，每轮开完均有资本家报价
+// 第九轮开完只剩 2 个箱子（幸运箱 + 最后 1 个未开），拒绝报价后进入最终换箱环节
+const ROUND_STRUCTURE = [6, 5, 4, 3, 2, 1, 1, 1, 1];
 
-const BANKER_PERCENTAGES = [0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.80, 0.85];
+const BANKER_PERCENTAGES = [0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.80, 0.85, 0.90];
 
-// 轮次名称（索引 0-7 共 8 轮，第八轮拒绝后直接进入换箱环节）
+// 轮次名称（索引 0-8 共 9 轮，第九轮为最终轮）
 const ROUND_NAMES = [
   '第一轮', '第二轮', '第三轮', '第四轮', '第五轮',
-  '第六轮', '第七轮', '第八轮'
+  '第六轮', '第七轮', '第八轮', '第九轮'
 ];
 
 // ===== Game State =====
@@ -1610,8 +1613,8 @@ async function onCaseClick(id) {
     await sleep(500);
     if (!isSessionValid(sessionId)) return;
 
-    // 所有轮次开完箱子后均进入资本家报价
-    // 第八轮拒绝报价后，playerNoDeal() 中会检测 round 超出范围进入换箱环节
+    // 所有轮次（第一轮~第九轮）开完箱子后均进入资本家报价
+    // 第九轮拒绝报价后，playerNoDeal() 中会检测 round 超出范围进入最终换箱环节
     bankerCall();
   } else {
     // 本轮还需开箱 → 解锁，允许继续点击
@@ -1890,7 +1893,7 @@ async function showCounterResult(accepted, playerOffer, bankerOffer, ev, session
 }
 
 // ===== Final Swap =====
-// 最后一轮结束后：没有资本家报价，直接询问是否交换箱子
+// 第九轮（最终轮）结束后：台上只剩幸运箱 + 最后 1 个未开箱，询问是否交换箱子
 function finalSwap() {
   gameState.phase = 'swap';
 
@@ -1920,7 +1923,7 @@ function showSwapChoice(candidates) {
   actionPanel.innerHTML = `
     <div class="action-message" id="actionMessage">🔀 换还是不换？</div>
     <div class="action-submessage" id="actionSubMessage">
-      你的 ${myCase.id}号 vs 台上 ${candidates.map(c => c.id + '号').join(' / ')}<br>
+      你的幸运箱是 ${myCase.id} 号，台上还剩 ${candidates.map(c => c.id + '号').join(' / ')}<br>
       做出你的最终选择吧！
     </div>
     <div style="margin: 8px 0;">
@@ -1929,7 +1932,7 @@ function showSwapChoice(candidates) {
     </div>
   `;
 
-  addHistory('🔀 最终抉择！你的 ' + myCase.id + '号 vs ' + candidates.map(c => c.id + '号').join('/') + '，请选择是否交换。');
+  addHistory('🔀 最终抉择！你的幸运箱 ' + myCase.id + '号 vs ' + candidates.map(c => c.id + '号').join('/') + '，请选择是否交换。');
 }
 
 function finalDeal(amount) {
